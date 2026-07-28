@@ -14,7 +14,7 @@ class PhraseGame {
         this.answerInput = document.getElementById('answer-input');
         this.btnSubmit = document.getElementById('btn-submit-answer');
         this.hintText = document.getElementById('hint-text');
-        
+
         this.nextRoundTimeout = null;
     }
 
@@ -50,39 +50,56 @@ class PhraseGame {
         }
 
         UI.addChatMessage('system', `Round ${this.gameState.currentRound} of ${this.gameState.totalRounds} — Wordle Mode! Guess the phrase from the emojis.`);
-        
+
         this.renderClueBoard();
+        this.clueDisplayArea.scrollTop = 0;
         setTimeout(() => this.answerInput.focus(), 100);
     }
 
     renderClueBoard() {
         this.clueDisplayArea.innerHTML = '';
-        
+        this.clueDisplayArea.scrollTop = 0;
+
         const boardWrapper = document.createElement('div');
-        boardWrapper.style.padding = '10px';
+        boardWrapper.className = 'idiom-board';
+        boardWrapper.style.padding = '6px';
         boardWrapper.style.width = '100%';
         boardWrapper.style.display = 'flex';
         boardWrapper.style.flexDirection = 'column';
         boardWrapper.style.alignItems = 'center';
+        boardWrapper.style.gap = '8px';
+
+        const statusRow = document.createElement('div');
+        statusRow.className = 'idiom-status-row';
+        statusRow.innerHTML = `
+            <span class="idiom-pill accent">🧩 Round ${this.currentAttempt + 1} of ${this.maxAttempts}</span>
+            <span class="idiom-pill">🔤 ${this.normalizedAnswer.length} letters</span>
+            <span class="idiom-pill warning">💡 One hint only</span>
+        `;
+        boardWrapper.appendChild(statusRow);
 
         // Idiom Image Clue!
         if (this.currentPhrase.image) {
             const imgDiv = document.createElement('img');
             imgDiv.src = this.currentPhrase.image;
             imgDiv.alt = "Idiom Clue";
+            imgDiv.className = 'idiom-image';
             imgDiv.style.width = '100%';
-            imgDiv.style.maxWidth = '300px';
+            imgDiv.style.maxWidth = '260px';
+            imgDiv.style.maxHeight = '110px';
+            imgDiv.style.objectFit = 'cover';
             imgDiv.style.borderRadius = '8px';
-            imgDiv.style.marginBottom = '15px';
+            imgDiv.style.marginBottom = '8px';
             imgDiv.style.boxShadow = '0 4px 15px rgba(0,0,0,0.5)';
             boardWrapper.appendChild(imgDiv);
         }
 
         // Emojis!
         const emojiDiv = document.createElement('div');
-        emojiDiv.style.fontSize = '3.5rem';
-        emojiDiv.style.marginBottom = '20px';
-        emojiDiv.style.letterSpacing = '10px';
+        emojiDiv.className = 'idiom-emojis';
+        emojiDiv.style.fontSize = '2.8rem';
+        emojiDiv.style.marginBottom = '12px';
+        emojiDiv.style.letterSpacing = '6px';
         emojiDiv.textContent = this.currentPhrase.emojis;
         boardWrapper.appendChild(emojiDiv);
 
@@ -91,8 +108,11 @@ class PhraseGame {
         grid.className = 'wordle-grid';
         grid.style.display = 'flex';
         grid.style.flexDirection = 'column';
-        grid.style.gap = '10px';
+        grid.style.gap = '8px';
         grid.style.width = '100%';
+        grid.style.alignItems = 'center';
+
+        const wordSegments = this.targetWord.split(' ');
 
         for (let rowIdx = 0; rowIdx < this.maxAttempts; rowIdx++) {
             const row = document.createElement('div');
@@ -100,7 +120,8 @@ class PhraseGame {
             row.style.display = 'flex';
             row.style.flexWrap = 'wrap';
             row.style.justifyContent = 'center';
-            row.style.gap = '4px';
+            row.style.gap = '8px';
+            row.style.alignItems = 'center';
 
             let rawGuess = this.attempts[rowIdx] || "";
             if (rowIdx === this.currentAttempt && this.answerInput) {
@@ -111,15 +132,11 @@ class PhraseGame {
 
             let letterIndex = 0;
 
-            for (let i = 0; i < this.targetWord.length; i++) {
-                const charTarget = this.targetWord[i];
+            wordSegments.forEach((word) => {
+                const wordGroup = document.createElement('div');
+                wordGroup.className = 'wordle-word-group';
 
-                if (!/[A-Z]/.test(charTarget)) {
-                    // Space or punctuation
-                    const spacer = document.createElement('div');
-                    spacer.style.width = '12px'; // width of space
-                    row.appendChild(spacer);
-                } else {
+                for (let i = 0; i < word.length; i++) {
                     const tile = document.createElement('div');
                     tile.className = 'wordle-tile';
                     const char = rawGuess[letterIndex] || "";
@@ -133,10 +150,13 @@ class PhraseGame {
                         tile.classList.add('tile-filled');
                     }
 
-                    row.appendChild(tile);
+                    wordGroup.appendChild(tile);
                     letterIndex++;
                 }
-            }
+
+                row.appendChild(wordGroup);
+            });
+
             grid.appendChild(row);
         }
 
@@ -221,7 +241,7 @@ class PhraseGame {
             this.answerInput.classList.remove('input-error');
             void this.answerInput.offsetWidth;
             this.answerInput.classList.add('input-error');
-            
+
             UI.playSound('wrong');
             if (this.hintText) {
                 this.hintText.textContent = `💡 Hint: ${this.currentPhrase.hint} | Try ${this.currentAttempt + 1} of 5`;
@@ -240,21 +260,21 @@ class PhraseGame {
         setTimeout(() => {
             this.clueDisplayArea.innerHTML = '';
             const reveal = document.createElement('div');
-            reveal.className = `clue-reveal ${isCorrect ? '' : 'wrong-reveal'}`;
-            
+            reveal.className = `clue-reveal idiom-reveal ${isCorrect ? '' : 'wrong-reveal'}`;
+
             reveal.innerHTML = `
                 <h2>${isCorrect ? '✅ IDIOM SOLVED!' : '⏰ OUT OF TRIES!'}</h2>
-                ${this.currentPhrase.image ? `<img src="${this.currentPhrase.image}" style="max-height: 140px; border-radius: 8px; margin-top: 10px;">` : ''}
-                <div style="font-size: 3.5rem; margin: 10px 0; letter-spacing: 10px;">
+                ${this.currentPhrase.image ? `<img src="${this.currentPhrase.image}" style="max-height: 140px; border-radius: 8px; margin-top: 10px;" alt="Idiom clue">` : ''}
+                <div style="font-size: 3.5rem; margin: 10px 0; letter-spacing: 10px;" class="idiom-emojis">
                     ${this.currentPhrase.emojis}
                 </div>
-                <div style="font-size: 2.2rem; margin: 10px 0; color: var(--accent-green); font-weight: 800;">
+                <div style="font-size: 2.2rem; margin: 10px 0; color: var(--accent-green); font-weight: 800;" class="idiom-answer">
                     ${this.currentPhrase.answer}
                 </div>
                 <p>${isCorrect ? `Solved in ${this.currentAttempt} tries! <strong>+${pointsEarned} points</strong>` : `The phrase was "${this.currentPhrase.answer}". 0 points.`}</p>
-                <p style="font-size: 1rem; margin-top: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px;"><em>Fun Fact: ${this.currentPhrase.funFact}</em></p>
+                <p style="font-size: 1rem; margin-top: 15px; padding: 10px; border-radius: 8px;" class="idiom-fact"><em>Fun Fact: ${this.currentPhrase.funFact}</em></p>
             `;
-            
+
             this.clueDisplayArea.appendChild(reveal);
 
             this.gameState.recordRound(this.currentPhrase.answer, this.currentPhrase.categoryEmoji, pointsEarned, this.currentAttempt, isCorrect);
