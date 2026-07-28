@@ -64,6 +64,19 @@ class PhraseGame {
         boardWrapper.style.flexDirection = 'column';
         boardWrapper.style.alignItems = 'center';
 
+        // Idiom Image Clue!
+        if (this.currentPhrase.image) {
+            const imgDiv = document.createElement('img');
+            imgDiv.src = this.currentPhrase.image;
+            imgDiv.alt = "Idiom Clue";
+            imgDiv.style.width = '100%';
+            imgDiv.style.maxWidth = '300px';
+            imgDiv.style.borderRadius = '8px';
+            imgDiv.style.marginBottom = '15px';
+            imgDiv.style.boxShadow = '0 4px 15px rgba(0,0,0,0.5)';
+            boardWrapper.appendChild(imgDiv);
+        }
+
         // Emojis!
         const emojiDiv = document.createElement('div');
         emojiDiv.style.fontSize = '3.5rem';
@@ -227,6 +240,7 @@ class PhraseGame {
             
             reveal.innerHTML = `
                 <h2>${isCorrect ? '✅ IDIOM SOLVED!' : '⏰ OUT OF TRIES!'}</h2>
+                ${this.currentPhrase.image ? `<img src="${this.currentPhrase.image}" style="max-height: 140px; border-radius: 8px; margin-top: 10px;">` : ''}
                 <div style="font-size: 3.5rem; margin: 10px 0; letter-spacing: 10px;">
                     ${this.currentPhrase.emojis}
                 </div>
