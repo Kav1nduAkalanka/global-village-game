@@ -20,8 +20,8 @@ class PhraseGame {
 
     startRound() {
         this.currentPhrase = this.gameState.getCurrentTarget();
-        this.targetWord = this.currentPhrase.answer.toUpperCase().replace(/[^A-Z]/g, '');
-        this.wordLength = this.targetWord.length;
+        this.targetWord = this.currentPhrase.answer.toUpperCase();
+        this.normalizedAnswer = this.targetWord.replace(/[^A-Z]/g, '');
         this.attempts = [];
         this.currentAttempt = 0;
         this.isGameOver = false;
@@ -33,77 +33,92 @@ class PhraseGame {
         this.answerInput.value = '';
         this.answerInput.disabled = false;
         this.btnSubmit.disabled = false;
-        this.answerInput.maxLength = this.wordLength;
-        this.answerInput.placeholder = `Type a ${this.wordLength}-letter word...`;
+        this.answerInput.removeAttribute('maxLength');
+        this.answerInput.placeholder = `Type the idiom (${this.normalizedAnswer.length} letters)...`;
         this.answerInput.classList.remove('input-success', 'input-error');
 
         // Add event listeners safely via property assignment
         this.btnSubmit.onclick = () => this.handleGuessSubmit();
         this.answerInput.onkeypress = (e) => { if (e.key === 'Enter') this.handleGuessSubmit(); };
 
-        this.clueTitle.textContent = `WORDLE CLUE — ${this.currentPhrase.categoryEmoji} ${this.currentPhrase.category.toUpperCase()} (${this.wordLength} Letters)`;
+        this.clueTitle.textContent = `GUESS THE IDIOM (${this.normalizedAnswer.length} Letters)`;
         this.clueProgressBar.style.width = `100%`;
 
         if (this.hintText) {
             this.hintText.textContent = `💡 Hint: ${this.currentPhrase.hint} | Try 1 of 5`;
         }
 
-        UI.addChatMessage('system', `Round ${this.gameState.currentRound} of ${this.gameState.totalRounds} — Wordle Mode! Guess the ${this.wordLength}-letter word.`);
+        UI.addChatMessage('system', `Round ${this.gameState.currentRound} of ${this.gameState.totalRounds} — Wordle Mode! Guess the phrase from the emojis.`);
         
-        this.renderWordleBoard();
+        this.renderClueBoard();
         setTimeout(() => this.answerInput.focus(), 100);
     }
 
-    renderWordleBoard() {
+    renderClueBoard() {
         this.clueDisplayArea.innerHTML = '';
         
         const boardWrapper = document.createElement('div');
-        boardWrapper.className = 'wordle-game-container';
+        boardWrapper.style.padding = '10px';
+        boardWrapper.style.width = '100%';
+        boardWrapper.style.display = 'flex';
+        boardWrapper.style.flexDirection = 'column';
+        boardWrapper.style.alignItems = 'center';
 
-        // Header image card (if available) + info bar
-        if (this.currentPhrase.image) {
-            const imgCard = document.createElement('div');
-            imgCard.className = 'wordle-image-banner';
-            imgCard.innerHTML = `<img src="${this.currentPhrase.image}" alt="${this.currentPhrase.answer}"><div class="wordle-banner-overlay">${this.currentPhrase.originEmoji} ${this.currentPhrase.origin} • ${this.currentPhrase.category.toUpperCase()}</div>`;
-            boardWrapper.appendChild(imgCard);
-        } else {
-            const headerInfo = document.createElement('div');
-            headerInfo.className = 'wordle-header-info';
-            headerInfo.innerHTML = `
-                <span>${this.currentPhrase.originEmoji} <strong>${this.currentPhrase.origin}</strong></span>
-                <span>Category: <strong>${this.currentPhrase.category.toUpperCase()}</strong></span>
-            `;
-            boardWrapper.appendChild(headerInfo);
-        }
+        // Emojis!
+        const emojiDiv = document.createElement('div');
+        emojiDiv.style.fontSize = '3.5rem';
+        emojiDiv.style.marginBottom = '20px';
+        emojiDiv.style.letterSpacing = '10px';
+        emojiDiv.textContent = this.currentPhrase.emojis;
+        boardWrapper.appendChild(emojiDiv);
 
         // Wordle Grid
         const grid = document.createElement('div');
         grid.className = 'wordle-grid';
+        grid.style.display = 'flex';
+        grid.style.flexDirection = 'column';
+        grid.style.gap = '10px';
+        grid.style.width = '100%';
 
         for (let rowIdx = 0; rowIdx < this.maxAttempts; rowIdx++) {
             const row = document.createElement('div');
             row.className = `wordle-row ${rowIdx === this.currentAttempt ? 'active-row' : ''}`;
-            row.style.gridTemplateColumns = `repeat(${this.wordLength}, 1fr)`;
+            row.style.display = 'flex';
+            row.style.flexWrap = 'wrap';
+            row.style.justifyContent = 'center';
+            row.style.gap = '4px';
 
-            const guess = this.attempts[rowIdx] || "";
+            const rawGuess = this.attempts[rowIdx] || "";
             const isEvaluated = rowIdx < this.currentAttempt;
-            const evaluation = isEvaluated ? this.evaluateGuess(guess) : [];
+            const evaluation = isEvaluated ? this.evaluateGuess(rawGuess) : [];
 
-            for (let colIdx = 0; colIdx < this.wordLength; colIdx++) {
-                const tile = document.createElement('div');
-                tile.className = 'wordle-tile';
-                const char = guess[colIdx] || "";
-                tile.textContent = char;
+            let letterIndex = 0;
 
-                if (isEvaluated) {
-                    const status = evaluation[colIdx];
-                    tile.classList.add(`tile-${status}`, 'tile-flip');
-                    tile.style.animationDelay = `${colIdx * 0.08}s`;
-                } else if (char) {
-                    tile.classList.add('tile-filled');
+            for (let i = 0; i < this.targetWord.length; i++) {
+                const charTarget = this.targetWord[i];
+
+                if (!/[A-Z]/.test(charTarget)) {
+                    // Space or punctuation
+                    const spacer = document.createElement('div');
+                    spacer.style.width = '12px'; // width of space
+                    row.appendChild(spacer);
+                } else {
+                    const tile = document.createElement('div');
+                    tile.className = 'wordle-tile';
+                    const char = rawGuess[letterIndex] || "";
+                    tile.textContent = char;
+
+                    if (isEvaluated) {
+                        const status = evaluation[letterIndex];
+                        tile.classList.add(`tile-${status}`, 'tile-flip');
+                        tile.style.animationDelay = `${letterIndex * 0.05}s`;
+                    } else if (char) {
+                        tile.classList.add('tile-filled');
+                    }
+
+                    row.appendChild(tile);
+                    letterIndex++;
                 }
-
-                row.appendChild(tile);
             }
             grid.appendChild(row);
         }
@@ -112,27 +127,24 @@ class PhraseGame {
         this.clueDisplayArea.appendChild(boardWrapper);
     }
 
-    evaluateGuess(guess) {
-        const result = new Array(this.wordLength).fill('absent');
-        const targetArr = this.targetWord.split('');
-        const guessArr = guess.split('');
+    evaluateGuess(guessNormalized) {
+        const result = new Array(this.normalizedAnswer.length).fill('absent');
+        const targetArr = this.normalizedAnswer.split('');
+        const guessArr = guessNormalized.split('');
         const targetCounts = {};
 
-        // Count letters in target
         targetArr.forEach(ch => {
             targetCounts[ch] = (targetCounts[ch] || 0) + 1;
         });
 
-        // Pass 1: Correct letters in correct positions (Green)
-        for (let i = 0; i < this.wordLength; i++) {
+        for (let i = 0; i < targetArr.length; i++) {
             if (guessArr[i] === targetArr[i]) {
                 result[i] = 'correct';
                 targetCounts[guessArr[i]]--;
             }
         }
 
-        // Pass 2: Present letters in wrong positions (Yellow)
-        for (let i = 0; i < this.wordLength; i++) {
+        for (let i = 0; i < targetArr.length; i++) {
             if (result[i] !== 'correct' && targetCounts[guessArr[i]] > 0) {
                 result[i] = 'present';
                 targetCounts[guessArr[i]]--;
@@ -145,26 +157,29 @@ class PhraseGame {
     handleGuessSubmit() {
         if (this.isGameOver) return;
 
-        const guess = this.answerInput.value.trim().toUpperCase().replace(/[^A-Z]/g, '');
+        const rawGuess = this.answerInput.value.trim().toUpperCase();
+        if (!rawGuess) return;
 
-        if (guess.length !== this.wordLength) {
+        const guessNormalized = rawGuess.replace(/[^A-Z]/g, '');
+
+        if (guessNormalized.length !== this.normalizedAnswer.length) {
             this.answerInput.classList.remove('input-error');
             void this.answerInput.offsetWidth;
             this.answerInput.classList.add('input-error');
             UI.playSound('wrong');
-            UI.addChatMessage('wrong', `⚠️ Guess must be exactly ${this.wordLength} letters!`);
+            UI.addChatMessage('wrong', `⚠️ Guess must contain exactly ${this.normalizedAnswer.length} letters!`);
             return;
         }
 
-        this.attempts.push(guess);
+        this.attempts.push(guessNormalized);
         this.currentAttempt++;
         this.answerInput.value = '';
 
-        this.renderWordleBoard();
+        this.renderClueBoard();
 
         const pointsMap = [500, 400, 300, 200, 100];
 
-        if (guess === this.targetWord) {
+        if (guessNormalized === this.normalizedAnswer) {
             // WIN!
             this.isGameOver = true;
             const points = pointsMap[this.currentAttempt - 1] || 100;
@@ -176,7 +191,7 @@ class PhraseGame {
 
             UI.playSound('correct');
             UI.showConfetti();
-            UI.addChatMessage('correct', `🎉 Spot on! You solved '${this.currentPhrase.answer}' in attempt ${this.currentAttempt}! +${points} pts`);
+            UI.addChatMessage('correct', `🎉 Spot on! You solved it in attempt ${this.currentAttempt}! +${points} pts`);
 
             this.revealAnswer(true, points);
         } else if (this.currentAttempt >= this.maxAttempts) {
@@ -186,7 +201,11 @@ class PhraseGame {
             this.revealAnswer(false, 0);
         } else {
             // Continue next attempt
-            UI.playSound('hint');
+            this.answerInput.classList.remove('input-error');
+            void this.answerInput.offsetWidth;
+            this.answerInput.classList.add('input-error');
+            
+            UI.playSound('wrong');
             if (this.hintText) {
                 this.hintText.textContent = `💡 Hint: ${this.currentPhrase.hint} | Try ${this.currentAttempt + 1} of 5`;
             }
@@ -207,13 +226,15 @@ class PhraseGame {
             reveal.className = `clue-reveal ${isCorrect ? '' : 'wrong-reveal'}`;
             
             reveal.innerHTML = `
-                <h2>${isCorrect ? '✅ WORD SOLVED!' : '⏰ OUT OF TRIES!'}</h2>
-                <div style="font-size: 2.5rem; margin: 10px 0;">
-                    ${this.currentPhrase.categoryEmoji} <strong>${this.currentPhrase.answer}</strong>
+                <h2>${isCorrect ? '✅ IDIOM SOLVED!' : '⏰ OUT OF TRIES!'}</h2>
+                <div style="font-size: 3.5rem; margin: 10px 0; letter-spacing: 10px;">
+                    ${this.currentPhrase.emojis}
                 </div>
-                ${this.currentPhrase.image ? `<img src="${this.currentPhrase.image}" class="clue-image" style="max-height: 160px; border-radius: 8px; margin: 10px 0; border: 2px solid #fff;" alt="${this.currentPhrase.answer}">` : ''}
-                <p>${isCorrect ? `Solved in ${this.currentAttempt} tries! <strong>+${pointsEarned} points</strong>` : `The word was ${this.currentPhrase.answer}. 0 points.`}</p>
-                <p style="font-size: 0.9rem; margin-top: 10px;"><em>Fun Fact: ${this.currentPhrase.funFact}</em></p>
+                <div style="font-size: 2.2rem; margin: 10px 0; color: var(--accent-green); font-weight: 800;">
+                    ${this.currentPhrase.answer}
+                </div>
+                <p>${isCorrect ? `Solved in ${this.currentAttempt} tries! <strong>+${pointsEarned} points</strong>` : `The phrase was "${this.currentPhrase.answer}". 0 points.`}</p>
+                <p style="font-size: 1rem; margin-top: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px;"><em>Fun Fact: ${this.currentPhrase.funFact}</em></p>
             `;
             
             this.clueDisplayArea.appendChild(reveal);
@@ -227,7 +248,7 @@ class PhraseGame {
             if (this.nextRoundTimeout) clearTimeout(this.nextRoundTimeout);
             this.nextRoundTimeout = setTimeout(() => {
                 this.gameState.nextRound();
-            }, 4500);
+            }, 5500);
         }, 1000);
     }
 }

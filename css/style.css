@@ -211,6 +211,8 @@ button:active {
 .secondary-btn {
     background-color: #037EF3; /* AIESEC Blue */
     color: white;
+    width: 100%;
+    margin-top: auto;
 }
 .secondary-btn:hover { background-color: #1a8ffc; }
 
@@ -389,7 +391,7 @@ button:active {
 }
 
 .clue-display {
-    flex-grow: 1;
+    flex: 1 1 0;
     background: #0f172a;
     border-radius: 12px;
     display: flex;
@@ -402,7 +404,7 @@ button:active {
     font-size: 1.5rem;
     overflow: hidden;
     position: relative;
-    min-height: 280px;
+    min-height: 0;
 }
 .clue-content-slide {
     animation: slideInDown 0.3s ease-out;
@@ -815,10 +817,11 @@ button:hover {
 }
 
 .wordle-tile {
-    height: 44px;
+    width: 32px;
+    height: 36px;
     border: 2px solid #334155;
     border-radius: 6px;
-    font-size: 1.4rem;
+    font-size: 1.2rem;
     font-weight: 800;
     color: #f8fafc;
     display: flex;
