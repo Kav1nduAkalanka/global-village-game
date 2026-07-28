@@ -40,6 +40,7 @@ class PhraseGame {
         // Add event listeners safely via property assignment
         this.btnSubmit.onclick = () => this.handleGuessSubmit();
         this.answerInput.onkeypress = (e) => { if (e.key === 'Enter') this.handleGuessSubmit(); };
+        this.answerInput.oninput = () => this.renderClueBoard();
 
         this.clueTitle.textContent = `GUESS THE IDIOM (${this.normalizedAnswer.length} Letters)`;
         this.clueProgressBar.style.width = `100%`;
@@ -101,7 +102,10 @@ class PhraseGame {
             row.style.justifyContent = 'center';
             row.style.gap = '4px';
 
-            const rawGuess = this.attempts[rowIdx] || "";
+            let rawGuess = this.attempts[rowIdx] || "";
+            if (rowIdx === this.currentAttempt && this.answerInput) {
+                rawGuess = this.answerInput.value.replace(/[^a-zA-Z]/g, '').toUpperCase();
+            }
             const isEvaluated = rowIdx < this.currentAttempt;
             const evaluation = isEvaluated ? this.evaluateGuess(rawGuess) : [];
 

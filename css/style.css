@@ -194,7 +194,7 @@ button {
     font-weight: 700;
     font-size: 1.1rem;
     padding: 12px;
-    border-radius: 8px;
+    border-radius: 50px;
     border: none;
     cursor: pointer;
     transition: transform 0.1s, opacity 0.2s;
@@ -486,7 +486,7 @@ button:active {
     border: 2px solid var(--border);
     padding: 15px;
     font-size: 1.2rem;
-    border-radius: 8px;
+    border-radius: 50px;
     transition: all 0.2s;
 }
 .mc-btn:hover {
