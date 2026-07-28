@@ -12,10 +12,10 @@ class CountryGame {
         
         this.clueOrder = [
             { id: 1, title: 'CLUE 1 of 5 — Emoji Hints', points: 500, render: this.renderEmojiClue.bind(this) },
-            { id: 2, title: 'CLUE 2 of 5 — The Flag', points: 400, render: this.renderFlagClue.bind(this) },
+            { id: 2, title: 'CLUE 2 of 5 — Fun Fact', points: 400, render: this.renderFactClue.bind(this) },
             { id: 3, title: 'CLUE 3 of 5 — Famous Landmark', points: 300, render: this.renderLandmarkClue.bind(this) },
             { id: 4, title: 'CLUE 4 of 5 — Capital City', points: 200, render: this.renderCapitalClue.bind(this) },
-            { id: 5, title: 'CLUE 5 of 5 — Fun Fact', points: 100, render: this.renderFactClue.bind(this) }
+            { id: 5, title: 'CLUE 5 of 5 — The Flag', points: 100, render: this.renderFlagClue.bind(this) }
         ];
     }
 
