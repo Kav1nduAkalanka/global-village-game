@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geography Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Inconsolata&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Home Screen -->
+    <div id="screen-home" class="screen active">
+        <div class="floating-emojis">
+            <!-- Animated via CSS -->
+            <span class="emoji e1">🌍</span>
+            <span class="emoji e2">🇯🇵</span>
+            <span class="emoji e3">🌮</span>
+            <span class="emoji e4">🎵</span>
+            <span class="emoji e5">🏔️</span>
+            <span class="emoji e6">🇧🇷</span>
+        </div>
+        
+        <div class="home-container">
+            <h1 class="logo-title">🌍 The World Game</h1>
+            <p class="subtitle">A fun guessing experience</p>
+            
+            <div class="player-setup">
+                <div class="avatar-selector">
+                    <span id="player-avatar">🌍</span>
+                    <button id="btn-next-avatar" class="icon-btn">↻</button>
+                </div>
+                <input type="text" id="player-name" placeholder="Enter your name" maxlength="20">
+            </div>
+
+            <div class="game-modes-grid">
+                <!-- Country Game Card -->
+                <div class="mode-card">
+                    <div class="mode-card-header">
+                        <span class="mode-title">🗺️ Guess the Country</span>
+                    </div>
+                    <div class="mode-setting">
+                        <label for="select-country-rounds">⚙️ Rounds:</label>
+                        <select id="select-country-rounds" class="rounds-select">
+                            <option value="1">1 Country</option>
+                            <option value="3">3 Countries</option>
+                            <option value="5" selected>5 Countries</option>
+                            <option value="10">10 Countries</option>
+                        </select>
+                    </div>
+                    <button id="btn-start-country" class="primary-btn">Start Country Game</button>
+                </div>
+
+                <!-- Wordle Game Card -->
+                <div class="mode-card">
+                    <div class="mode-card-header">
+                        <span class="mode-title">💬 Guess the Word (Wordle)</span>
+                    </div>
+                    <div class="mode-setting">
+                        <label for="select-phrase-rounds">⚙️ Rounds:</label>
+                        <select id="select-phrase-rounds" class="rounds-select">
+                            <option value="1" selected>1 Word (Single)</option>
+                            <option value="3">3 Words</option>
+                            <option value="5">5 Words</option>
+                            <option value="10">10 Words</option>
+                        </select>
+                    </div>
+                    <button id="btn-start-phrase" class="secondary-btn">Start Wordle Game</button>
+                </div>
+            </div>
+            
+            <footer class="home-footer">
+                <p>Made with ❤️ — Connecting cultures, changing lives.</p>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Game Screen Layout (Shared Structure) -->
+    <div id="screen-game" class="screen">
+        <div id="game-layout">
+            
+            <!-- Left Panel: Leaderboard / Round History -->
+            <div id="panel-leaderboard">
+                <div class="panel-header">
+                    <h2>Round History</h2>
+                </div>
+                <div class="score-display">Score: <span id="current-score">0</span></div>
+                <div id="round-history-list">
+                    <!-- History injected here -->
+                </div>
+            </div>
+
+            <!-- Center Panel: Main Clue Area -->
+            <div id="panel-main">
+                <div class="top-bar">
+                    <div class="top-left" style="display: flex; align-items: center; gap: 15px;">
+                        <button id="btn-quit-game" class="secondary-btn" style="padding: 5px 10px; font-size: 0.9rem;">🏠 Quit</button>
+                        <span class="logo-small">🌍 The World Game</span>
+                    </div>
+                    <div class="timer-container">
+                        <svg class="timer-svg" width="60" height="60">
+                            <circle class="timer-bg" cx="30" cy="30" r="25"></circle>
+                            <circle class="timer-progress" cx="30" cy="30" r="25"></circle>
+                        </svg>
+                        <span id="timer-text">15</span>
+                    </div>
+                    <div class="top-right">
+                        Round <span id="round-number">1</span>/<span id="total-rounds-count">5</span>
+                    </div>
+                </div>
+
+                <div class="clue-container">
+                    <div class="clue-header">
+                        <h3 id="clue-title">CLUE 1 of 5 — Emoji Hints</h3>
+                        <div class="clue-progress">
+                            <div class="clue-progress-bar" id="clue-progress-bar" style="width: 20%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div id="clue-display-area" class="clue-display">
+                        <!-- Dynamic clue content goes here -->
+                    </div>
+
+                    <div id="answer-section" class="answer-section">
+                        <input type="text" id="answer-input" placeholder="Type your answer here..." autocomplete="off">
+                        <button id="btn-submit-answer">Submit</button>
+                    </div>
+                    <div id="multiple-choice-section" class="multiple-choice-grid" style="display: none;">
+                        <button class="mc-btn" id="mc-btn-0"></button>
+                        <button class="mc-btn" id="mc-btn-1"></button>
+                        <button class="mc-btn" id="mc-btn-2"></button>
+                        <button class="mc-btn" id="mc-btn-3"></button>
+                    </div>
+                    <div id="hint-text" class="hint-text"></div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Chat Log -->
+            <div id="panel-chat">
+                <div class="panel-header">
+                    <h2>Chat Log</h2>
+                </div>
+                <div id="chat-log">
+                    <div class="chat-msg chat-msg--system">Welcome to the game!</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Results Screen -->
+    <div id="screen-results" class="screen">
+        <div class="results-container">
+            <h1 class="bounce-in">🎉 GAME OVER 🎉</h1>
+            
+            <div class="final-score-box">
+                <h2>Your final score: <span id="final-score-value">0</span></h2>
+                <h3 id="player-grade" class="grade-text">Explorer</h3>
+            </div>
+            
+            <div class="round-summary">
+                <h3>Round Summary:</h3>
+                <div id="results-history-list" class="results-list">
+                    <!-- Results injected here -->
+                </div>
+            </div>
+            
+            <div class="results-actions">
+                <button id="btn-play-again" class="primary-btn">🔄 Play Again</button>
+                <button id="btn-home" class="secondary-btn">🏠 Back to Home</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/country-game.js"></script>
+    <script src="js/phrase-game.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
